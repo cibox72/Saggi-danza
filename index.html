@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>G&L Studio - Gestione Saggi Danza</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -15,7 +16,7 @@
     color: #333;
   }
   .container {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
     background: #fff;
     border-radius: 15px;
@@ -110,6 +111,8 @@
   .btn-danger:hover { background: #c82333; }
   .btn-secondary { background: #6c757d; color: #fff; }
   .btn-secondary:hover { background: #5a6268; }
+  .btn-print { background: #e91e63; color: #fff; }
+  .btn-print:hover { background: #c2185b; }
   .filter-bar {
     background: #f8f9fa;
     padding: 15px;
@@ -169,6 +172,7 @@
   .card h3 { font-size: 18px; margin-bottom: 10px; }
   .card p { font-size: 32px; font-weight: bold; }
   .card small { display: block; margin-top: 10px; opacity: 0.9; font-size: 12px; }
+  .card.print-card { background: linear-gradient(135deg, #e91e63, #9c27b0); }
   .alert {
     padding: 12px;
     border-radius: 8px;
@@ -178,6 +182,40 @@
   }
   .alert-success { background: #d4edda; color: #155724; }
   .alert-error { background: #f8d7da; color: #721c24; }
+  .preview-box {
+    background: #f8f9fa;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+  .preview-box h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    background: #e8eaf6;
+    padding: 15px;
+    border-radius: 10px;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-item strong {
+    display: block;
+    font-size: 24px;
+    color: #667eea;
+  }
+  .stat-item span {
+    font-size: 12px;
+    color: #555;
+  }
   footer {
     background: #2c3e50;
     color: #fff;
@@ -185,7 +223,6 @@
     text-align: center;
     font-size: 13px;
   }
-  footer a { color: #667eea; text-decoration: none; }
   @media (max-width: 600px) {
     th, td { font-size: 12px; padding: 6px; }
     .section { padding: 15px; }
@@ -195,7 +232,7 @@
 <body>
 <div class="container">
   <header>
-    <h1>📸 G&L Studio</h1>
+    <h1> G&L Studio</h1>
     <p>Gestione Saggi Danza</p>
     <p style="font-size:12px; margin-top:8px;">Via Ciarrocco 21, Canicattì | Tel: 3669381103 - 3206337370</p>
   </header>
@@ -204,6 +241,7 @@
     <button class="nav-btn active" onclick="showSection('dashboard', this)">🏠 Dashboard</button>
     <button class="nav-btn" onclick="showSection('nuovo', this)">➕ Nuovo Cliente</button>
     <button class="nav-btn" onclick="showSection('archivio', this)">📁 Archivio</button>
+    <button class="nav-btn" onclick="showSection('stampa', this)">🖨️ Stampa Elenco</button>
     <button class="nav-btn" onclick="showSection('backup', this)">💾 Backup</button>
   </nav>
 
@@ -221,7 +259,12 @@
         <p id="totalClients">0</p>
         <small>Clienti totali archiviati</small>
       </div>
-      <div class="card" onclick="showSection('backup', document.querySelectorAll('.nav-btn')[3])">
+      <div class="card print-card" onclick="showSection('stampa', document.querySelectorAll('.nav-btn')[3])">
+        <h3>️ Stampa Elenco</h3>
+        <p>📋</p>
+        <small>Stampa partecipanti saggio</small>
+      </div>
+      <div class="card" onclick="showSection('backup', document.querySelectorAll('.nav-btn')[4])">
         <h3>Backup</h3>
         <p>💾</p>
         <small>Salva tutti i clienti</small>
@@ -296,7 +339,7 @@
     </div>
 
     <div class="btn-group">
-      <button class="btn btn-primary" onclick="salvaCliente()">💾 Crea / Salva</button>
+      <button class="btn btn-primary" onclick="salvaCliente()"> Crea / Salva</button>
       <button class="btn btn-warning" onclick="modificaCliente()">✏️ Modifica</button>
       <button class="btn btn-info" onclick="generaPDF()">📄 Salva in PDF</button>
       <button class="btn btn-secondary" onclick="resetForm()">🔄 Reset</button>
@@ -327,6 +370,39 @@
     <div id="archivioContent"></div>
   </div>
 
+  <!-- STAMPA ELENCO PARTECIPANTI -->
+  <div id="stampa" class="section">
+    <h2>🖨️ Stampa Elenco Partecipanti</h2>
+    <p style="text-align:center; color:#666; margin-bottom:20px;">
+      Seleziona la scuola e l'anno del saggio per generare l'elenco PDF con tutti i partecipanti in ordine alfabetico.
+    </p>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Scuola</label>
+        <select id="stampaScuola">
+          <option value="">-- Seleziona scuola --</option>
+          <option value="Scuola Enza Clementi">Scuola Enza Clementi</option>
+          <option value="Giada Dance">Giada Dance</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Anno del Saggio</label>
+        <select id="stampaAnno"></select>
+      </div>
+      <div class="form-group">
+        <label>&nbsp;</label>
+        <button class="btn btn-info" onclick="anteprimaElenco()">👁️ Anteprima</button>
+      </div>
+    </div>
+
+    <div id="previewArea"></div>
+
+    <div class="btn-group">
+      <button class="btn btn-print" onclick="stampaElencoPDF()">🖨️ Genera e Stampa PDF</button>
+    </div>
+  </div>
+
   <!-- BACKUP -->
   <div id="backup" class="section">
     <h2>💾 Backup e Ripristino</h2>
@@ -342,37 +418,31 @@
 
   <footer>
     <p><strong>G&L Studio</strong> - Via Ciarrocco 21, Canicattì</p>
-    <p>📞 3669381103 | 3206337370</p>
+    <p> 3669381103 | 3206337370</p>
   </footer>
 </div>
 
 <script>
-  // Inizializzazione
   let clienti = JSON.parse(localStorage.getItem('clienti') || '[]');
 
-  // Popola anno (da 2020 a 2035)
   const annoSel = document.getElementById('anno');
   const filtroAnno = document.getElementById('filtroAnno');
+  const stampaAnno = document.getElementById('stampaAnno');
   const currentYear = new Date().getFullYear();
   for (let y = 2020; y <= 2035; y++) {
-    const opt = new Option(y, y);
-    annoSel.add(opt);
+    annoSel.add(new Option(y, y));
     filtroAnno.add(new Option(y === currentYear ? y + ' (corrente)' : y, y));
+    stampaAnno.add(new Option(y === currentYear ? y + ' (corrente)' : y, y));
   }
   annoSel.value = currentYear;
   filtroAnno.value = currentYear;
+  stampaAnno.value = currentYear;
 
-  // Popola quantità (1-10)
   const quantitaSel = document.getElementById('quantita');
-  for (let i = 1; i <= 10; i++) {
-    quantitaSel.add(new Option(i, i));
-  }
+  for (let i = 1; i <= 10; i++) quantitaSel.add(new Option(i, i));
 
-  // Popola importo (5-100 multipli di 5)
   const importoSel = document.getElementById('importo');
-  for (let i = 5; i <= 100; i += 5) {
-    importoSel.add(new Option(i + ' €', i));
-  }
+  for (let i = 5; i <= 100; i += 5) importoSel.add(new Option(i + ' €', i));
 
   function showSection(id, btn) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -389,8 +459,12 @@
 
   function showAlert(msg, type = 'success') {
     const box = document.getElementById('alertBox');
-    box.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
-    setTimeout(() => box.innerHTML = '', 3000);
+    if (box) {
+      box.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+      setTimeout(() => box.innerHTML = '', 3000);
+    } else {
+      alert(msg);
+    }
   }
 
   function salvaCliente() {
@@ -433,11 +507,10 @@
   }
 
   function modificaCliente() {
-    const id = prompt('Inserisci l\'ID del cliente da modificare (visualizzabile in archivio):');
+    const id = prompt('Inserisci l\'ID del cliente da modificare:');
     if (!id) return;
     const c = clienti.find(x => x.id == id);
     if (!c) { showAlert('❌ Cliente non trovato!', 'error'); return; }
-
     document.getElementById('editId').value = c.id;
     document.getElementById('scuola').value = c.scuola;
     document.getElementById('anno').value = c.anno;
@@ -449,7 +522,7 @@
     document.getElementById('quantita').value = c.quantita;
     document.getElementById('importo').value = c.importo;
     document.getElementById('formTitle').textContent = '✏️ Modifica Cliente #' + c.id;
-    showAlert('📝 Dati caricati. Modifica e clicca "Crea / Salva".');
+    showAlert(' Dati caricati. Modifica e clicca "Crea / Salva".');
     showSection('nuovo', document.querySelectorAll('.nav-btn')[1]);
   }
 
@@ -467,8 +540,7 @@
     const scuola = document.getElementById('filtroScuola').value;
     const anno = document.getElementById('filtroAnno').value;
     let filtered = clienti.filter(c =>
-      (!scuola || c.scuola === scuola) &&
-      (!anno || c.anno == anno)
+      (!scuola || c.scuola === scuola) && (!anno || c.anno == anno)
     );
 
     const content = document.getElementById('archivioContent');
@@ -483,16 +555,12 @@
     </tr></thead><tbody>`;
     filtered.forEach(c => {
       html += `<tr>
-        <td>${c.id}</td>
-        <td>${c.nome}</td>
-        <td>${c.cognome}</td>
-        <td>${c.telefono}</td>
-        <td>${c.tipoCliente}</td>
-        <td>${c.quantita}</td>
-        <td>${c.importo} €</td>
+        <td>${c.id}</td><td>${c.nome}</td><td>${c.cognome}</td>
+        <td>${c.telefono}</td><td>${c.tipoCliente}</td>
+        <td>${c.quantita}</td><td>${c.importo} €</td>
         <td class="action-btns">
           <button style="background:#ffc107;" onclick="caricaPerModifica(${c.id})">✏️</button>
-          <button style="background:#17a2b8;" onclick="generaPDFSingolo(${c.id})">📄</button>
+          <button style="background:#17a2b8;" onclick="generaPDFSingolo(${c.id})"></button>
           <button style="background:#dc3545;" onclick="eliminaCliente(${c.id})">🗑️</button>
         </td>
       </tr>`;
@@ -553,33 +621,22 @@
   function creaPDF(c) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
-
-    // Titolo scuola e anno (centrato e grassetto)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(24);
     doc.text(c.scuola, 105, 30, { align: 'center' });
     doc.setFontSize(18);
     doc.text('Saggio di Danza - Anno ' + c.anno, 105, 42, { align: 'center' });
-
-    // Linea separatrice
     doc.setLineWidth(0.5);
     doc.line(20, 50, 190, 50);
-
-    // Scheda cliente
     doc.setFontSize(16);
     doc.text('Scheda Cliente', 105, 62, { align: 'center' });
-
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
     let y = 75;
     const righe = [
-      ['Nome:', c.nome],
-      ['Cognome:', c.cognome],
-      ['Telefono:', c.telefono],
-      ['Tipo Cliente:', c.tipoCliente],
-      ['Servizio:', c.servizio],
-      ['Quantità:', c.quantita],
-      ['Importo / Acconto:', c.importo + ' €']
+      ['Nome:', c.nome], ['Cognome:', c.cognome], ['Telefono:', c.telefono],
+      ['Tipo Cliente:', c.tipoCliente], ['Servizio:', c.servizio],
+      ['Quantità:', c.quantita], ['Importo / Acconto:', c.importo + ' €']
     ];
     righe.forEach(([label, val]) => {
       doc.setFont('helvetica', 'bold');
@@ -588,8 +645,6 @@
       doc.text(String(val), 90, y);
       y += 10;
     });
-
-    // Footer studio
     doc.setLineWidth(0.3);
     doc.line(20, 270, 190, 270);
     doc.setFontSize(10);
@@ -598,9 +653,137 @@
     doc.setFont('helvetica', 'normal');
     doc.text('Via Ciarrocco 21, Canicattì', 105, 284, { align: 'center' });
     doc.text('Tel: 3669381103 - 3206337370', 105, 290, { align: 'center' });
-
     doc.save(`Scheda_${c.cognome}_${c.nome}_${c.anno}.pdf`);
     showAlert('✅ PDF generato con successo!');
+  }
+
+  // ============ STAMPA ELENCO PARTECIPANTI ============
+  function getElencoPartecipanti() {
+    const scuola = document.getElementById('stampaScuola').value;
+    const anno = document.getElementById('stampaAnno').value;
+    if (!scuola) {
+      showAlert('⚠️ Seleziona una scuola!', 'error');
+      return null;
+    }
+    let filtered = clienti.filter(c => c.scuola === scuola && c.anno == anno);
+    // Ordine alfabetico per cognome, poi per nome
+    filtered.sort((a, b) => {
+      const cognA = a.cognome.toLowerCase();
+      const cognB = b.cognome.toLowerCase();
+      if (cognA !== cognB) return cognA.localeCompare(cognB);
+      return a.nome.toLowerCase().localeCompare(b.nome.toLowerCase());
+    });
+    return { scuola, anno, elenco: filtered };
+  }
+
+  function anteprimaElenco() {
+    const data = getElencoPartecipanti();
+    const area = document.getElementById('previewArea');
+    if (!data) { area.innerHTML = ''; return; }
+
+    if (data.elenco.length === 0) {
+      area.innerHTML = `<div class="preview-box"><p style="text-align:center; color:#888;">
+        Nessun partecipante trovato per ${data.scuola} - Anno ${data.anno}</p></div>`;
+      return;
+    }
+
+    let html = `<div class="preview-box">
+      <h3>📋 Anteprima: ${data.scuola} - Anno ${data.anno}</h3>
+      <div class="stats-row">
+        <div class="stat-item"><strong>${data.elenco.length}</strong><span>Partecipanti</span></div>
+        <div class="stat-item"><strong>${data.elenco.filter(c => c.tipoCliente === 'Fratelli').length}</strong><span>Fratelli</span></div>
+        <div class="stat-item"><strong>${data.elenco.filter(c => c.tipoCliente === 'Singolo').length}</strong><span>Singoli</span></div>
+        <div class="stat-item"><strong>${data.elenco.reduce((sum, c) => sum + parseFloat(c.importo || 0), 0)} €</strong><span>Totale Acconti</span></div>
+      </div>
+      <table><thead><tr>
+        <th>#</th><th>Cognome</th><th>Nome</th><th>Telefono</th>
+        <th>Tipo</th><th>Qtà</th><th>Importo</th>
+      </tr></thead><tbody>`;
+    data.elenco.forEach((c, i) => {
+      html += `<tr>
+        <td>${i + 1}</td><td><strong>${c.cognome}</strong></td><td>${c.nome}</td>
+        <td>${c.telefono}</td><td>${c.tipoCliente}</td>
+        <td>${c.quantita}</td><td>${c.importo} €</td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+    area.innerHTML = html;
+  }
+
+  function stampaElencoPDF() {
+    const data = getElencoPartecipanti();
+    if (!data) return;
+
+    if (data.elenco.length === 0) {
+      showAlert('⚠️ Nessun partecipante trovato per questa selezione!', 'error');
+      return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // orizzontale per più spazio
+
+    // Titolo
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.text(data.scuola, 148, 20, { align: 'center' });
+    doc.setFontSize(16);
+    doc.text('Elenco Partecipanti - Saggio di Danza ' + data.anno, 148, 30, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Generato il: ' + new Date().toLocaleString('it-IT'), 148, 38, { align: 'center' });
+
+    // Tabella
+    const tableData = data.elenco.map((c, i) => [
+      i + 1,
+      c.cognome,
+      c.nome,
+      c.telefono,
+      c.tipoCliente,
+      c.servizio,
+      c.quantita,
+      c.importo + ' €'
+    ]);
+
+    doc.autoTable({
+      startY: 45,
+      head: [['#', 'Cognome', 'Nome', 'Telefono', 'Tipo', 'Servizio', 'Qtà', 'Importo']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [102, 126, 234],
+        textColor: 255,
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      bodyStyles: {
+        fontSize: 9,
+        cellPadding: 3
+      },
+      alternateRowStyles: {
+        fillColor: [240, 240, 255]
+      },
+      columnStyles: {
+        0: { cellWidth: 12, halign: 'center' },
+        1: { fontStyle: 'bold' },
+        4: { cellWidth: 22 },
+        6: { cellWidth: 12, halign: 'center' },
+        7: { cellWidth: 22, halign: 'right' }
+      },
+      margin: { left: 10, right: 10 }
+    });
+
+    // Footer
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setLineWidth(0.3);
+    doc.line(10, finalY, 287, finalY);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('G&L Studio', 148, finalY + 7, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.text('Via Ciarrocco 21, Canicattì | Tel: 3669381103 - 3206337370', 148, finalY + 13, { align: 'center' });
+
+    doc.save(`Elenco_${data.scuola.replace(/\s+/g, '_')}_${data.anno}.pdf`);
+    showAlert('✅ PDF elenco generato con successo! ' + data.elenco.length + ' partecipanti.');
   }
 
   function eseguiBackup() {
@@ -635,7 +818,7 @@
           showAlert('✅ Ripristino completato! ' + clienti.length + ' clienti.');
         }
       } catch (err) {
-        showAlert('❌ File non valido: ' + err.message, 'error');
+        showAlert(' File non valido: ' + err.message, 'error');
       }
     };
     reader.readAsText(file);
@@ -643,7 +826,7 @@
   }
 
   function cancellaTutto() {
-    if (confirm('⚠️ ATTENZIONE: cancellare TUTTI i dati? Questa azione è irreversibile!')) {
+    if (confirm('⚠️ ATTENZIONE: cancellare TUTTI i dati?')) {
       if (confirm('Sei davvero sicuro?')) {
         clienti = [];
         localStorage.removeItem('clienti');
