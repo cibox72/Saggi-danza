@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G&L Studio - Gestione Saggi Danza</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    overflow: hidden;
+  }
+  header {
+    background: linear-gradient(135deg, #2c3e50, #4a6278);
+    color: #fff;
+    padding: 25px;
+    text-align: center;
+  }
+  header h1 { font-size: 28px; margin-bottom: 5px; }
+  header p { font-size: 14px; opacity: 0.9; }
+  nav {
+    background: #f8f9fa;
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    border-bottom: 2px solid #e0e0e0;
+  }
+  nav button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #667eea;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+  nav button:hover { background: #5568d3; transform: translateY(-2px); }
+  nav button.active { background: #764ba2; }
+  .section { padding: 30px; display: none; }
+  .section.active { display: block; }
+  .section h2 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 25px;
+    color: #2c3e50;
+    border-bottom: 3px solid #667eea;
+    padding-bottom: 10px;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  .form-group { display: flex; flex-direction: column; }
+  .form-group label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #2c3e50;
+  }
+  .form-group input, .form-group select {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border 0.3s;
+  }
+  .form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s;
+  }
+  .btn-primary { background: #28a745; color: #fff; }
+  .btn-primary:hover { background: #218838; }
+  .btn-warning { background: #ffc107; color: #000; }
+  .btn-warning:hover { background: #e0a800; }
+  .btn-info { background: #17a2b8; color: #fff; }
+  .btn-info:hover { background: #138496; }
+  .btn-danger { background: #dc3545; color: #fff; }
+  .btn-danger:hover { background: #c82333; }
+  .btn-secondary { background: #6c757d; color: #fff; }
+  .btn-secondary:hover { background: #5a6268; }
+  .filter-bar {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: end;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  th {
+    background: #667eea;
+    color: #fff;
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+  }
+  tr:hover { background: #f8f9fa; }
+  .action-btns { display: flex; gap: 5px; }
+  .action-btns button {
+    padding: 5px 10px;
+    font-size: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #fff;
+  }
+  .dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+  .card {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+  .card:hover { transform: translateY(-5px); }
+  .card h3 { font-size: 18px; margin-bottom: 10px; }
+  .card p { font-size: 32px; font-weight: bold; }
+  .card small { display: block; margin-top: 10px; opacity: 0.9; font-size: 12px; }
+  .alert {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .alert-success { background: #d4edda; color: #155724; }
+  .alert-error { background: #f8d7da; color: #721c24; }
+  footer {
+    background: #2c3e50;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    font-size: 13px;
+  }
+  footer a { color: #667eea; text-decoration: none; }
+  @media (max-width: 600px) {
+    th, td { font-size: 12px; padding: 6px; }
+    .section { padding: 15px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📸 G&L Studio</h1>
+    <p>Gestione Saggi Danza</p>
+    <p style="font-size:12px; margin-top:8px;">Via Ciarrocco 21, Canicattì | Tel: 3669381103 - 3206337370</p>
+  </header>
+
+  <nav>
+    <button class="nav-btn active" onclick="showSection('dashboard', this)">🏠 Dashboard</button>
+    <button class="nav-btn" onclick="showSection('nuovo', this)">➕ Nuovo Cliente</button>
+    <button class="nav-btn" onclick="showSection('archivio', this)">📁 Archivio</button>
+    <button class="nav-btn" onclick="showSection('backup', this)">💾 Backup</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="section active">
+    <h2>Dashboard</h2>
+    <div class="dashboard-cards">
+      <div class="card" onclick="showSection('nuovo', document.querySelectorAll('.nav-btn')[1])">
+        <h3>Nuovo Cliente</h3>
+        <p>➕</p>
+        <small>Inserisci un nuovo cliente</small>
+      </div>
+      <div class="card" onclick="showSection('archivio', document.querySelectorAll('.nav-btn')[2])">
+        <h3>Archivio</h3>
+        <p id="totalClients">0</p>
+        <small>Clienti totali archiviati</small>
+      </div>
+      <div class="card" onclick="showSection('backup', document.querySelectorAll('.nav-btn')[3])">
+        <h3>Backup</h3>
+        <p>💾</p>
+        <small>Salva tutti i clienti</small>
+      </div>
+      <div class="card" onclick="document.getElementById('restoreFile').click()">
+        <h3>Ripristino</h3>
+        <p>🔄</p>
+        <small>Ripristina da backup</small>
+      </div>
+    </div>
+    <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreBackup(event)">
+  </div>
+
+  <!-- NUOVO CLIENTE -->
+  <div id="nuovo" class="section">
+    <h2 id="formTitle">➕ Nuovo Cliente</h2>
+    <div id="alertBox"></div>
+    <input type="hidden" id="editId">
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Scuola</label>
+        <select id="scuola">
+          <option value="">-- Seleziona --</option>
+          <option value="Scuola Enza Clementi">Scuola Enza Clementi</option>
+          <option value="Giada Dance">Giada Dance</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Anno del Saggio</label>
+        <select id="anno"></select>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nome</label>
+        <input type="text" id="nome" placeholder="Nome">
+      </div>
+      <div class="form-group">
+        <label>Cognome</label>
+        <input type="text" id="cognome" placeholder="Cognome">
+      </div>
+      <div class="form-group">
+        <label>Telefono</label>
+        <input type="tel" id="telefono" placeholder="Numero telefono">
+      </div>
+      <div class="form-group">
+        <label>Tipo Cliente</label>
+        <select id="tipoCliente">
+          <option value="Singolo">Singolo</option>
+          <option value="Fratelli">Fratelli</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Tipo di Servizio</label>
+        <select id="servizio">
+          <option value="Pacchetto 4 foto 20x25 cm">Pacchetto 4 foto 20x25 cm</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Quantità</label>
+        <select id="quantita"></select>
+      </div>
+      <div class="form-group">
+        <label>Importo / Acconto (€)</label>
+        <select id="importo"></select>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="salvaCliente()">💾 Crea / Salva</button>
+      <button class="btn btn-warning" onclick="modificaCliente()">✏️ Modifica</button>
+      <button class="btn btn-info" onclick="generaPDF()">📄 Salva in PDF</button>
+      <button class="btn btn-secondary" onclick="resetForm()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <!-- ARCHIVIO -->
+  <div id="archivio" class="section">
+    <h2>📁 Archivio Clienti</h2>
+    <div class="filter-bar">
+      <div class="form-group">
+        <label>Scuola</label>
+        <select id="filtroScuola" onchange="mostraArchivio()">
+          <option value="">Tutte</option>
+          <option value="Scuola Enza Clementi">Scuola Enza Clementi</option>
+          <option value="Giada Dance">Giada Dance</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Anno</label>
+        <select id="filtroAnno" onchange="mostraArchivio()"></select>
+      </div>
+      <div class="form-group">
+        <label>&nbsp;</label>
+        <button class="btn btn-info" onclick="mostraArchivio()">🔍 Filtra</button>
+      </div>
+    </div>
+    <div id="archivioContent"></div>
+  </div>
+
+  <!-- BACKUP -->
+  <div id="backup" class="section">
+    <h2>💾 Backup e Ripristino</h2>
+    <div style="text-align:center; padding:20px;">
+      <p style="margin-bottom:20px;">Effettua un backup di tutti i clienti o ripristina da un file precedente.</p>
+      <button class="btn btn-primary" onclick="eseguiBackup()" style="margin:10px;">💾 Scarica Backup (JSON)</button>
+      <button class="btn btn-info" onclick="document.getElementById('restoreFile2').click()" style="margin:10px;">🔄 Ripristina da File</button>
+      <input type="file" id="restoreFile2" accept=".json" style="display:none" onchange="restoreBackup(event)">
+      <br><br>
+      <button class="btn btn-danger" onclick="cancellaTutto()" style="margin:10px;">🗑️ Cancella Tutti i Dati</button>
+    </div>
+  </div>
+
+  <footer>
+    <p><strong>G&L Studio</strong> - Via Ciarrocco 21, Canicattì</p>
+    <p>📞 3669381103 | 3206337370</p>
+  </footer>
+</div>
+
+<script>
+  // Inizializzazione
+  let clienti = JSON.parse(localStorage.getItem('clienti') || '[]');
+
+  // Popola anno (da 2020 a 2035)
+  const annoSel = document.getElementById('anno');
+  const filtroAnno = document.getElementById('filtroAnno');
+  const currentYear = new Date().getFullYear();
+  for (let y = 2020; y <= 2035; y++) {
+    const opt = new Option(y, y);
+    annoSel.add(opt);
+    filtroAnno.add(new Option(y === currentYear ? y + ' (corrente)' : y, y));
+  }
+  annoSel.value = currentYear;
+  filtroAnno.value = currentYear;
+
+  // Popola quantità (1-10)
+  const quantitaSel = document.getElementById('quantita');
+  for (let i = 1; i <= 10; i++) {
+    quantitaSel.add(new Option(i, i));
+  }
+
+  // Popola importo (5-100 multipli di 5)
+  const importoSel = document.getElementById('importo');
+  for (let i = 5; i <= 100; i += 5) {
+    importoSel.add(new Option(i + ' €', i));
+  }
+
+  function showSection(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    if (id === 'dashboard') aggiornaDashboard();
+    if (id === 'archivio') mostraArchivio();
+  }
+
+  function aggiornaDashboard() {
+    document.getElementById('totalClients').textContent = clienti.length;
+  }
+
+  function showAlert(msg, type = 'success') {
+    const box = document.getElementById('alertBox');
+    box.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+    setTimeout(() => box.innerHTML = '', 3000);
+  }
+
+  function salvaCliente() {
+    const data = {
+      id: document.getElementById('editId').value || Date.now(),
+      scuola: document.getElementById('scuola').value,
+      anno: document.getElementById('anno').value,
+      nome: document.getElementById('nome').value.trim(),
+      cognome: document.getElementById('cognome').value.trim(),
+      telefono: document.getElementById('telefono').value.trim(),
+      tipoCliente: document.getElementById('tipoCliente').value,
+      servizio: document.getElementById('servizio').value,
+      quantita: document.getElementById('quantita').value,
+      importo: document.getElementById('importo').value,
+      dataCreazione: new Date().toLocaleString('it-IT')
+    };
+
+    if (!data.scuola || !data.nome || !data.cognome) {
+      showAlert('⚠️ Compila Scuola, Nome e Cognome!', 'error');
+      return;
+    }
+
+    const editId = document.getElementById('editId').value;
+    if (editId) {
+      const idx = clienti.findIndex(c => c.id == editId);
+      if (idx >= 0) {
+        data.id = parseInt(editId);
+        data.dataCreazione = clienti[idx].dataCreazione;
+        clienti[idx] = data;
+      }
+      showAlert('✅ Cliente modificato con successo!');
+    } else {
+      clienti.push(data);
+      showAlert('✅ Cliente creato con successo!');
+    }
+
+    localStorage.setItem('clienti', JSON.stringify(clienti));
+    resetForm();
+    aggiornaDashboard();
+  }
+
+  function modificaCliente() {
+    const id = prompt('Inserisci l\'ID del cliente da modificare (visualizzabile in archivio):');
+    if (!id) return;
+    const c = clienti.find(x => x.id == id);
+    if (!c) { showAlert('❌ Cliente non trovato!', 'error'); return; }
+
+    document.getElementById('editId').value = c.id;
+    document.getElementById('scuola').value = c.scuola;
+    document.getElementById('anno').value = c.anno;
+    document.getElementById('nome').value = c.nome;
+    document.getElementById('cognome').value = c.cognome;
+    document.getElementById('telefono').value = c.telefono;
+    document.getElementById('tipoCliente').value = c.tipoCliente;
+    document.getElementById('servizio').value = c.servizio;
+    document.getElementById('quantita').value = c.quantita;
+    document.getElementById('importo').value = c.importo;
+    document.getElementById('formTitle').textContent = '✏️ Modifica Cliente #' + c.id;
+    showAlert('📝 Dati caricati. Modifica e clicca "Crea / Salva".');
+    showSection('nuovo', document.querySelectorAll('.nav-btn')[1]);
+  }
+
+  function resetForm() {
+    document.getElementById('editId').value = '';
+    document.getElementById('nome').value = '';
+    document.getElementById('cognome').value = '';
+    document.getElementById('telefono').value = '';
+    document.getElementById('quantita').value = '1';
+    document.getElementById('importo').value = '5';
+    document.getElementById('formTitle').textContent = '➕ Nuovo Cliente';
+  }
+
+  function mostraArchivio() {
+    const scuola = document.getElementById('filtroScuola').value;
+    const anno = document.getElementById('filtroAnno').value;
+    let filtered = clienti.filter(c =>
+      (!scuola || c.scuola === scuola) &&
+      (!anno || c.anno == anno)
+    );
+
+    const content = document.getElementById('archivioContent');
+    if (filtered.length === 0) {
+      content.innerHTML = '<p style="text-align:center; padding:20px; color:#888;">Nessun cliente trovato.</p>';
+      return;
+    }
+
+    let html = `<table><thead><tr>
+      <th>ID</th><th>Nome</th><th>Cognome</th><th>Telefono</th>
+      <th>Tipo</th><th>Qtà</th><th>Importo</th><th>Azioni</th>
+    </tr></thead><tbody>`;
+    filtered.forEach(c => {
+      html += `<tr>
+        <td>${c.id}</td>
+        <td>${c.nome}</td>
+        <td>${c.cognome}</td>
+        <td>${c.telefono}</td>
+        <td>${c.tipoCliente}</td>
+        <td>${c.quantita}</td>
+        <td>${c.importo} €</td>
+        <td class="action-btns">
+          <button style="background:#ffc107;" onclick="caricaPerModifica(${c.id})">✏️</button>
+          <button style="background:#17a2b8;" onclick="generaPDFSingolo(${c.id})">📄</button>
+          <button style="background:#dc3545;" onclick="eliminaCliente(${c.id})">🗑️</button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    content.innerHTML = html;
+  }
+
+  function caricaPerModifica(id) {
+    const c = clienti.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('editId').value = c.id;
+    document.getElementById('scuola').value = c.scuola;
+    document.getElementById('anno').value = c.anno;
+    document.getElementById('nome').value = c.nome;
+    document.getElementById('cognome').value = c.cognome;
+    document.getElementById('telefono').value = c.telefono;
+    document.getElementById('tipoCliente').value = c.tipoCliente;
+    document.getElementById('servizio').value = c.servizio;
+    document.getElementById('quantita').value = c.quantita;
+    document.getElementById('importo').value = c.importo;
+    document.getElementById('formTitle').textContent = '✏️ Modifica Cliente #' + c.id;
+    showSection('nuovo', document.querySelectorAll('.nav-btn')[1]);
+  }
+
+  function eliminaCliente(id) {
+    if (!confirm('Eliminare questo cliente?')) return;
+    clienti = clienti.filter(c => c.id !== id);
+    localStorage.setItem('clienti', JSON.stringify(clienti));
+    mostraArchivio();
+    aggiornaDashboard();
+  }
+
+  function generaPDFSingolo(id) {
+    const c = clienti.find(x => x.id === id);
+    if (c) creaPDF(c);
+  }
+
+  function generaPDF() {
+    const c = {
+      scuola: document.getElementById('scuola').value,
+      anno: document.getElementById('anno').value,
+      nome: document.getElementById('nome').value,
+      cognome: document.getElementById('cognome').value,
+      telefono: document.getElementById('telefono').value,
+      tipoCliente: document.getElementById('tipoCliente').value,
+      servizio: document.getElementById('servizio').value,
+      quantita: document.getElementById('quantita').value,
+      importo: document.getElementById('importo').value
+    };
+    if (!c.nome || !c.cognome) {
+      showAlert('⚠️ Inserisci nome e cognome prima di generare il PDF!', 'error');
+      return;
+    }
+    creaPDF(c);
+  }
+
+  function creaPDF(c) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+
+    // Titolo scuola e anno (centrato e grassetto)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(24);
+    doc.text(c.scuola, 105, 30, { align: 'center' });
+    doc.setFontSize(18);
+    doc.text('Saggio di Danza - Anno ' + c.anno, 105, 42, { align: 'center' });
+
+    // Linea separatrice
+    doc.setLineWidth(0.5);
+    doc.line(20, 50, 190, 50);
+
+    // Scheda cliente
+    doc.setFontSize(16);
+    doc.text('Scheda Cliente', 105, 62, { align: 'center' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    let y = 75;
+    const righe = [
+      ['Nome:', c.nome],
+      ['Cognome:', c.cognome],
+      ['Telefono:', c.telefono],
+      ['Tipo Cliente:', c.tipoCliente],
+      ['Servizio:', c.servizio],
+      ['Quantità:', c.quantita],
+      ['Importo / Acconto:', c.importo + ' €']
+    ];
+    righe.forEach(([label, val]) => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(label, 30, y);
+      doc.setFont('helvetica', 'normal');
+      doc.text(String(val), 90, y);
+      y += 10;
+    });
+
+    // Footer studio
+    doc.setLineWidth(0.3);
+    doc.line(20, 270, 190, 270);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('G&L Studio', 105, 278, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.text('Via Ciarrocco 21, Canicattì', 105, 284, { align: 'center' });
+    doc.text('Tel: 3669381103 - 3206337370', 105, 290, { align: 'center' });
+
+    doc.save(`Scheda_${c.cognome}_${c.nome}_${c.anno}.pdf`);
+    showAlert('✅ PDF generato con successo!');
+  }
+
+  function eseguiBackup() {
+    const data = {
+      dataEsportazione: new Date().toLocaleString('it-IT'),
+      totaleClienti: clienti.length,
+      clienti: clienti
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup_saggi_danza_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showAlert('✅ Backup scaricato!');
+  }
+
+  function restoreBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        const nuovi = data.clienti || data;
+        if (!Array.isArray(nuovi)) throw new Error('Formato non valido');
+        if (confirm(`Ripristinare ${nuovi.length} clienti? I dati attuali verranno sostituiti.`)) {
+          clienti = nuovi;
+          localStorage.setItem('clienti', JSON.stringify(clienti));
+          aggiornaDashboard();
+          showAlert('✅ Ripristino completato! ' + clienti.length + ' clienti.');
+        }
+      } catch (err) {
+        showAlert('❌ File non valido: ' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  function cancellaTutto() {
+    if (confirm('⚠️ ATTENZIONE: cancellare TUTTI i dati? Questa azione è irreversibile!')) {
+      if (confirm('Sei davvero sicuro?')) {
+        clienti = [];
+        localStorage.removeItem('clienti');
+        aggiornaDashboard();
+        showAlert('🗑️ Tutti i dati sono stati cancellati.');
+      }
+    }
+  }
+
+  aggiornaDashboard();
+</script>
+</body>
+</html>
