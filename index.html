@@ -260,7 +260,7 @@
         <small>Clienti totali archiviati</small>
       </div>
       <div class="card print-card" onclick="showSection('stampa', document.querySelectorAll('.nav-btn')[3])">
-        <h3>🖨️ Stampa Elenco</h3>
+        <h3>️ Stampa Elenco</h3>
         <p>📋</p>
         <small>Stampa partecipanti saggio</small>
       </div>
@@ -483,7 +483,7 @@
     };
 
     if (!data.scuola || !data.nome || !data.cognome) {
-      showAlert('⚠️ Compila Scuola, Nome e Cognome!', 'error');
+      showAlert('️ Compila Scuola, Nome e Cognome!', 'error');
       return;
     }
 
@@ -560,7 +560,7 @@
         <td>${c.quantita}</td><td>${c.importo} €</td>
         <td class="action-btns">
           <button style="background:#ffc107;" onclick="caricaPerModifica(${c.id})">✏️</button>
-          <button style="background:#17a2b8;" onclick="generaPDFSingolo(${c.id})">📄</button>
+          <button style="background:#17a2b8;" onclick="generaPDFSingolo(${c.id})"></button>
           <button style="background:#dc3545;" onclick="eliminaCliente(${c.id})">🗑️</button>
         </td>
       </tr>`;
@@ -612,7 +612,7 @@
       importo: document.getElementById('importo').value
     };
     if (!c.nome || !c.cognome) {
-      showAlert('⚠️ Inserisci nome e cognome prima di generare il PDF!', 'error');
+      showAlert('️ Inserisci nome e cognome prima di generare il PDF!', 'error');
       return;
     }
     creaPDF(c);
@@ -693,7 +693,6 @@
         <div class="stat-item"><strong>${data.elenco.length}</strong><span>Partecipanti</span></div>
         <div class="stat-item"><strong>${data.elenco.filter(c => c.tipoCliente === 'Fratelli').length}</strong><span>Fratelli</span></div>
         <div class="stat-item"><strong>${data.elenco.filter(c => c.tipoCliente === 'Singolo').length}</strong><span>Singoli</span></div>
-        <div class="stat-item"><strong>${data.elenco.reduce((sum, c) => sum + parseFloat(c.importo || 0), 0)} €</strong><span>Totale Acconti</span></div>
       </div>
       <table><thead><tr>
         <th>#</th><th>Cognome e Nome</th><th>Telefono</th>
