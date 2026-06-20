@@ -232,7 +232,7 @@
 <body>
 <div class="container">
   <header>
-    <h1> G&L Studio</h1>
+    <h1>📸 G&L Studio</h1>
     <p>Gestione Saggi Danza</p>
     <p style="font-size:12px; margin-top:8px;">Via Ciarrocco 21, Canicattì | Tel: 3669381103 - 3206337370</p>
   </header>
@@ -241,7 +241,7 @@
     <button class="nav-btn active" onclick="showSection('dashboard', this)">🏠 Dashboard</button>
     <button class="nav-btn" onclick="showSection('nuovo', this)">➕ Nuovo Cliente</button>
     <button class="nav-btn" onclick="showSection('archivio', this)">📁 Archivio</button>
-    <button class="nav-btn" onclick="showSection('stampa', this)">🖨️ Stampa Elenco</button>
+    <button class="nav-btn" onclick="showSection('stampa', this)">️ Stampa Elenco</button>
     <button class="nav-btn" onclick="showSection('backup', this)">💾 Backup</button>
   </nav>
 
@@ -260,8 +260,8 @@
         <small>Clienti totali archiviati</small>
       </div>
       <div class="card print-card" onclick="showSection('stampa', document.querySelectorAll('.nav-btn')[3])">
-        <h3>️ Stampa Elenco</h3>
-        <p>📋</p>
+        <h3>🖨️ Stampa Elenco</h3>
+        <p></p>
         <small>Stampa partecipanti saggio</small>
       </div>
       <div class="card" onclick="showSection('backup', document.querySelectorAll('.nav-btn')[4])">
@@ -280,7 +280,7 @@
 
   <!-- NUOVO CLIENTE -->
   <div id="nuovo" class="section">
-    <h2 id="formTitle">➕ Nuovo Cliente</h2>
+    <h2 id="formTitle"> Nuovo Cliente</h2>
     <div id="alertBox"></div>
     <input type="hidden" id="editId">
 
@@ -339,7 +339,7 @@
     </div>
 
     <div class="btn-group">
-      <button class="btn btn-primary" onclick="salvaCliente()"> Crea / Salva</button>
+      <button class="btn btn-primary" onclick="salvaCliente()">💾 Crea / Salva</button>
       <button class="btn btn-warning" onclick="modificaCliente()">✏️ Modifica</button>
       <button class="btn btn-info" onclick="generaPDF()">📄 Salva in PDF</button>
       <button class="btn btn-secondary" onclick="resetForm()">🔄 Reset</button>
@@ -522,7 +522,7 @@
     document.getElementById('quantita').value = c.quantita;
     document.getElementById('importo').value = c.importo;
     document.getElementById('formTitle').textContent = '✏️ Modifica Cliente #' + c.id;
-    showAlert(' Dati caricati. Modifica e clicca "Crea / Salva".');
+    showAlert('📝 Dati caricati. Modifica e clicca "Crea / Salva".');
     showSection('nuovo', document.querySelectorAll('.nav-btn')[1]);
   }
 
@@ -550,17 +550,17 @@
     }
 
     let html = `<table><thead><tr>
-      <th>ID</th><th>Nome</th><th>Cognome</th><th>Telefono</th>
+      <th>ID</th><th>Cognome</th><th>Nome</th><th>Telefono</th>
       <th>Tipo</th><th>Qtà</th><th>Importo</th><th>Azioni</th>
     </tr></thead><tbody>`;
     filtered.forEach(c => {
       html += `<tr>
-        <td>${c.id}</td><td>${c.nome}</td><td>${c.cognome}</td>
+        <td>${c.id}</td><td><strong>${c.cognome}</strong></td><td>${c.nome}</td>
         <td>${c.telefono}</td><td>${c.tipoCliente}</td>
         <td>${c.quantita}</td><td>${c.importo} €</td>
         <td class="action-btns">
           <button style="background:#ffc107;" onclick="caricaPerModifica(${c.id})">✏️</button>
-          <button style="background:#17a2b8;" onclick="generaPDFSingolo(${c.id})"></button>
+          <button style="background:#17a2b8;" onclick="generaPDFSingolo(${c.id})">📄</button>
           <button style="background:#dc3545;" onclick="eliminaCliente(${c.id})">🗑️</button>
         </td>
       </tr>`;
@@ -634,7 +634,7 @@
     doc.setFontSize(12);
     let y = 75;
     const righe = [
-      ['Nome:', c.nome], ['Cognome:', c.cognome], ['Telefono:', c.telefono],
+      ['Cognome:', c.cognome], ['Nome:', c.nome], ['Telefono:', c.telefono],
       ['Tipo Cliente:', c.tipoCliente], ['Servizio:', c.servizio],
       ['Quantità:', c.quantita], ['Importo / Acconto:', c.importo + ' €']
     ];
@@ -666,7 +666,7 @@
       return null;
     }
     let filtered = clienti.filter(c => c.scuola === scuola && c.anno == anno);
-    // Ordine alfabetico per cognome, poi per nome
+    // Ordine alfabetico: prima per cognome, poi per nome
     filtered.sort((a, b) => {
       const cognA = a.cognome.toLowerCase();
       const cognB = b.cognome.toLowerCase();
@@ -696,12 +696,12 @@
         <div class="stat-item"><strong>${data.elenco.reduce((sum, c) => sum + parseFloat(c.importo || 0), 0)} €</strong><span>Totale Acconti</span></div>
       </div>
       <table><thead><tr>
-        <th>#</th><th>Cognome</th><th>Nome</th><th>Telefono</th>
+        <th>#</th><th>Cognome e Nome</th><th>Telefono</th>
         <th>Tipo</th><th>Qtà</th><th>Importo</th>
       </tr></thead><tbody>`;
     data.elenco.forEach((c, i) => {
       html += `<tr>
-        <td>${i + 1}</td><td><strong>${c.cognome}</strong></td><td>${c.nome}</td>
+        <td>${i + 1}</td><td><strong>${c.cognome} ${c.nome}</strong></td>
         <td>${c.telefono}</td><td>${c.tipoCliente}</td>
         <td>${c.quantita}</td><td>${c.importo} €</td>
       </tr>`;
@@ -732,11 +732,10 @@
     doc.setFont('helvetica', 'normal');
     doc.text('Generato il: ' + new Date().toLocaleString('it-IT'), 148, 38, { align: 'center' });
 
-    // Tabella
+    // Tabella con Cognome e Nome uniti
     const tableData = data.elenco.map((c, i) => [
       i + 1,
-      c.cognome,
-      c.nome,
+      c.cognome + ' ' + c.nome,
       c.telefono,
       c.tipoCliente,
       c.servizio,
@@ -746,7 +745,7 @@
 
     doc.autoTable({
       startY: 45,
-      head: [['#', 'Cognome', 'Nome', 'Telefono', 'Tipo', 'Servizio', 'Qtà', 'Importo']],
+      head: [['#', 'Cognome e Nome', 'Telefono', 'Tipo', 'Servizio', 'Qtà', 'Importo']],
       body: tableData,
       theme: 'grid',
       headStyles: {
@@ -764,10 +763,10 @@
       },
       columnStyles: {
         0: { cellWidth: 12, halign: 'center' },
-        1: { fontStyle: 'bold' },
-        4: { cellWidth: 22 },
-        6: { cellWidth: 12, halign: 'center' },
-        7: { cellWidth: 22, halign: 'right' }
+        1: { fontStyle: 'bold', cellWidth: 70 },
+        3: { cellWidth: 22 },
+        5: { cellWidth: 12, halign: 'center' },
+        6: { cellWidth: 22, halign: 'right' }
       },
       margin: { left: 10, right: 10 }
     });
@@ -818,7 +817,7 @@
           showAlert('✅ Ripristino completato! ' + clienti.length + ' clienti.');
         }
       } catch (err) {
-        showAlert(' File non valido: ' + err.message, 'error');
+        showAlert('❌ File non valido: ' + err.message, 'error');
       }
     };
     reader.readAsText(file);
